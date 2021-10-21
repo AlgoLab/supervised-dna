@@ -4,7 +4,7 @@ SET PARAMETERS FOR ALL STEPS
 # -- Define parameters
 # General
 KMER = 8
-SPECIE = "Bacteria"
+SPECIE = "Dengue"
 # For training
 TRAIN_SIZE = 0.8 # size for val and test sets = (1-TRAIN_SIZE)/2
 BATCH_SIZE = 8
