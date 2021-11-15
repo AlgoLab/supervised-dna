@@ -8,6 +8,7 @@ from supervised_dna import (
 
 KMER = PARAMETERS["KMER"]
 BATCH_SIZE = PARAMETERS["BATCH_SIZE"]
+CLADES = PARAMETERS["CLADES"]
 
 # -1- Load model
 loader = ModelLoader()
@@ -20,7 +21,7 @@ with open("datasets.json","r") as f:
 list_test = datasets["test"]
 
 config_generator = dict(
-    order_output_model = ["1","2","3","4"],
+    order_output_model = CLADES,
     shuffle = False,
 )
 

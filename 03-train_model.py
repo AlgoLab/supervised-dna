@@ -23,8 +23,8 @@ model  = loader("cnn_{}mers".format(KMER)) # get compiled model from ./supervise
 # load list of images for train and validation sets
 with open("datasets.json","r") as f:
     datasets = json.load(f)
-list_train = datasets["train"][:300]
-list_val   = datasets["val"][:20]
+list_train = datasets["train"]
+list_val   = datasets["val"]
 
 # prepare datasets to feed the model
 config_generator = dict(
