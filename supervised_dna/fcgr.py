@@ -15,10 +15,11 @@ from .monitor_values import (
 #TODO: tqdm for FCGR generation
 class GenerateFCGR: 
 
-    def __init__(self, destination_folder: Path = "img", kmer: int = 8): 
+    def __init__(self, destination_folder: Path = "img", kmer: int = 8, bits: int = 8): 
         self.destination_folder = Path(destination_folder)
         self.kmer = kmer
-        self.fcgr = FCGR(kmer)
+        self.bits = bits
+        self.fcgr = FCGR(kmer, bits)
         self.counter = 0 # count number of time a sequence is converted to fcgr
         
         # Monitor Values

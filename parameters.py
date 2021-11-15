@@ -4,6 +4,7 @@ SET PARAMETERS FOR ALL STEPS
 # -- Define parameters
 # General
 KMER = 8
+BITS = 16
 SPECIE = "hCoV-19"
 CLADES = ['S','L','G','V','GR','GH','GV','GK']
 # For training
@@ -15,6 +16,7 @@ EPOCHS = 20
 # Load to a Dictionary
 PARAMETERS = dict(
     KMER = KMER,
+    BITS = BITS,
     CLADES = CLADES,
     FOLDER_FASTA = f"data/{SPECIE}",
     FOLDER_IMG = f"img-{KMER}-mer/{SPECIE}",
