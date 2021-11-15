@@ -19,7 +19,6 @@ ds = DataSelector(id_labels, labels)
 # Get train, test and val sets
 ds(train_size=TRAIN_SIZE, balanced_on=labels)
 
-
 with open("datasets.json", "w", encoding="utf-8") as f: 
     json.dump(ds.datasets["id_labels"], f, ensure_ascii=False, indent=4)
 

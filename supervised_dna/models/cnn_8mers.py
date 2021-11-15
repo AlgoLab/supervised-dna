@@ -91,7 +91,7 @@ def get_model():
     conv5 = identity_block(conv5, [512,512,2048], 3, '5', '3')
 
     avg_pool = GlobalAveragePooling2D()(conv5)
-    out = Dense(4, activation='softmax')(avg_pool)
+    out = Dense(8, activation='softmax')(avg_pool)
     
 
     model = Model(inp, out)
