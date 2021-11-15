@@ -54,7 +54,7 @@ class GenerateFCGR:
         count_T = seq.count("T")
         
         # Generate and save FCGR for the current sequence
-        _, specie, _, label  = str(path.parents[0]).split("/")
+        _, specie, label  = str(path.parents[0]).split("/")
         id_fasta = path.stem
         path_save = self.destination_folder.joinpath("{}/{}/{}.jpg".format(specie, label, id_fasta))
         path_save.parents[0].mkdir(parents=True, exist_ok=True)
