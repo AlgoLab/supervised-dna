@@ -6,6 +6,7 @@ import random ; random.seed(42)
 from pathlib import Path
 from Bio import SeqIO
 from complexcgr import FCGR
+import concurrent.futures
 
 from .monitor_values import (
     MonitorValues, 
@@ -29,8 +30,8 @@ class GenerateFCGR:
 
     def __call__(self, list_fasta):
         
-        for path in tqdm(list_fasta, desc="Generating FCGR"):
-            self.from_fasta(path)
+        with concurrent.futures.ThreadPoolExecutor() as executor: 
+            list(tqdm(executor.map(self.from_fasta, list_fasta), total=len(list_fasta), desc="Generating FCGR"))
 
         # save metadata
         self.mv.to_csv(self.destination_folder.joinpath("fcgr-metadata.csv"))
