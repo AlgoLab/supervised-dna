@@ -23,6 +23,7 @@ list_test = datasets["test"]
 
 config_generator = dict(
     order_output_model = CLADES,
+    batch_size = BATCH_SIZE,
     shuffle = False,
     kmer = KMER,
     bits = BITS,
