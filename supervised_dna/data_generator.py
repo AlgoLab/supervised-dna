@@ -4,9 +4,15 @@ from typing import List, Union
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
-
+from PIL import Image
 from .encoder_output import EncoderOutput
 from .image_loader import InputOutputLoader
+
+ # Load min_array.jpg
+BASE_DIR = Path(__file__).resolve().parent.parent
+PATH_REF_ARRAY = BASE_DIR.joinpath("ref_array.jpg")
+REF_ARRAY = np.asarray(Image.open(str(PATH_REF_ARRAY)))
+REF_ARRAY = np.expand_dims(REF_ARRAY,axis=-1)
 
 class DataGenerator(tf.keras.utils.Sequence):
     """Data Generator  for keras from a list of paths to files""" 
@@ -17,11 +23,15 @@ class DataGenerator(tf.keras.utils.Sequence):
                 batch_size: int = 8,
                 shuffle: bool = True,
                 kmer: int = 8,
+                bits: int = 8,
+                
                 ):
         self.list_paths = list_paths
         self.order_output_model = order_output_model   
         self.batch_size = batch_size 
         self.shuffle = shuffle
+        self.kmer = kmer
+        self.bits = bits
         self.input_output_loader = InputOutputLoader(2**kmer, 2**kmer, order_output_model)
         
         # initialize first batch
@@ -72,6 +82,10 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         return np.concatenate(X_batch, axis=0), np.array(y_batch)
 
-    @staticmethod
-    def preprocessing(img):
-        return img/255.
+    def preprocessing(self, img):
+        "The inpt img is loaded as a (2**K,2**K,1) dimensional array"
+        # Substract min_array
+        img = img - REF_ARRAY
+        # Scale to [0,1]
+        img /= float(2**self.bits-1)
+        return img

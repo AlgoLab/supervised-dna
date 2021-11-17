@@ -9,6 +9,7 @@ from supervised_dna import (
 KMER = PARAMETERS["KMER"]
 BATCH_SIZE = PARAMETERS["BATCH_SIZE"]
 CLADES = PARAMETERS["CLADES"]
+BITS = PARAMETERS["BITS"]
 
 # -1- Load model
 loader = ModelLoader()
@@ -23,6 +24,8 @@ list_test = datasets["test"]
 config_generator = dict(
     order_output_model = CLADES,
     shuffle = False,
+    kmer = KMER,
+    bits = BITS,
 )
 
 ds_test = DataGenerator(

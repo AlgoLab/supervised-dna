@@ -8,6 +8,7 @@ import tensorflow as tf
 
 # General parameters
 KMER = PARAMETERS["KMER"]
+BITS = PARAMETERS["BITS"]
 CLADES = PARAMETERS["CLADES"]
 
 # Train parameters
@@ -30,14 +31,23 @@ list_val   = datasets["val"]
 config_generator = dict(
     order_output_model = CLADES,
     shuffle = False,
+    kmer = KMER,
+    bits = BITS,
 )
 
 # Instantiate DataGenerator for training set
 ds_train = DataGenerator(
-    list_val,
+    list_train,
     **config_generator
 )
 
+# from PIL import Image
+# import numpy as np
+# a = np.asarray(Image.open("ref_array.jpg"))
+# print(a)
+# b,l=ds_train.__getitem__(1)
+# img = b[0,:,:,0]
+# print(img)
 ds_val = DataGenerator(
     list_val,
     **config_generator

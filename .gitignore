@@ -1,5 +1,7 @@
 checkpoint/
 img-8-mer/
 supervised-dna/
+supervised-dna/__pycache__/
 data/
+__pycache__/
 aux.py

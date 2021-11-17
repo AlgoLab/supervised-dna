@@ -9,7 +9,7 @@ SPECIE = "hCoV-19"
 CLADES = ['S','L','G','V','GR','GH','GV','GK']
 # For training
 TRAIN_SIZE = 0.8 # size for val and test sets = (1-TRAIN_SIZE)/2
-BATCH_SIZE = 8
+BATCH_SIZE = 32
 EPOCHS = 20
 
 # ---------------------
