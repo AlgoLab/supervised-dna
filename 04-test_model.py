@@ -10,10 +10,11 @@ KMER = PARAMETERS["KMER"]
 BATCH_SIZE = PARAMETERS["BATCH_SIZE"]
 CLADES = PARAMETERS["CLADES"]
 BITS = PARAMETERS["BITS"]
+MODEL = PARAMETERS["MODEL"]
 
 # -1- Load model
 loader = ModelLoader()
-model  = loader("cnn_{}mers".format(KMER), weights_path="checkpoint/cp.ckpt") # get compiled model from ./supervised_dna/models
+model  = loader(MODEL, weights_path="checkpoint/cp.ckpt") # get compiled model from ./supervised_dna/models
 
 # -2- Datasets
 # load list of images for train and validation sets

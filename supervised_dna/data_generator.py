@@ -1,18 +1,11 @@
 "Load data to the model (Same as dataset.py but with keras)"
 
-from typing import List, Union
+from typing import List, Union, Callable, Optional
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-from .encoder_output import EncoderOutput
-from .image_loader import InputOutputLoader
-
- # Load min_array.jpg
-BASE_DIR = Path(__file__).resolve().parent.parent
-PATH_REF_ARRAY = BASE_DIR.joinpath("ref_array.jpg")
-REF_ARRAY = np.asarray(Image.open(str(PATH_REF_ARRAY)))
-REF_ARRAY = np.expand_dims(REF_ARRAY,axis=-1)
+from .npy_loader import InputOutputLoader
 
 class DataGenerator(tf.keras.utils.Sequence):
     """Data Generator  for keras from a list of paths to files""" 
@@ -22,17 +15,16 @@ class DataGenerator(tf.keras.utils.Sequence):
                 order_output_model: List[str],
                 batch_size: int = 8,
                 shuffle: bool = True,
-                kmer: int = 8,
-                bits: int = 8,
-                
+                kmer: int = 8,          
+                preprocessing: Optional[Callable] = None 
                 ):
         self.list_paths = list_paths
         self.order_output_model = order_output_model   
         self.batch_size = batch_size 
         self.shuffle = shuffle
         self.kmer = kmer
-        self.bits = bits
-        self.input_output_loader = InputOutputLoader(2**kmer, 2**kmer, order_output_model)
+        self.preprocessing = preprocessing if callable(preprocessing) else lambda x: x
+        self.input_output_loader = InputOutputLoader(order_output_model)
         
         # initialize first batch
         self.on_epoch_end()
@@ -75,17 +67,9 @@ class DataGenerator(tf.keras.utils.Sequence):
         X_batch = []
         y_batch = []
         for path in list_path_temp: 
-            img, label = self.input_output_loader(path)
-            img = self.preprocessing(img)
-            X_batch.append(np.expand_dims(img,axis=0)) # add to list with batch dims
+            npy, label = self.input_output_loader(path)
+            npy = self.preprocessing(npy)
+            X_batch.append(np.expand_dims(npy,axis=0)) # add to list with batch dims
             y_batch.append(label)
 
         return np.concatenate(X_batch, axis=0), np.array(y_batch)
-
-    def preprocessing(self, img):
-        "The inpt img is loaded as a (2**K,2**K,1) dimensional array"
-        # Substract min_array
-        img = img - REF_ARRAY
-        # Scale to [0,1]
-        img /= float(2**self.bits-1)
-        return img

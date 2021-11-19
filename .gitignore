@@ -1,5 +1,6 @@
 checkpoint/
 img-8-mer/
+npy-8-mer/
 supervised-dna/
 supervised-dna/__pycache__/
 data/

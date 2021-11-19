@@ -5,8 +5,8 @@ from pathlib import Path
 from supervised_dna import DataSelector
 
 # Select all data
-FOLDER_IMG = Path(PARAMETERS["FOLDER_IMG"]) 
-LIST_FASTA   = list(FOLDER_IMG.rglob("*jpg"))
+FOLDER_NPY = Path(PARAMETERS["FOLDER_NPY"]) 
+LIST_FASTA   = list(FOLDER_NPY.rglob("*npy"))
 TRAIN_SIZE   = float(PARAMETERS["TRAIN_SIZE"]) 
 
 # Input for DataSelector

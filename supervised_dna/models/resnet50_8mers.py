@@ -59,7 +59,7 @@ def convolutional_block(inp, filters, kernel_size, block, layer, strides=2):
     
     return y
 
-def get_model():
+def get_model(n_outputs):
 
     inp = Input(shape=(256, 256, 1), name='input')
     padd = ZeroPadding2D(3)(inp)
@@ -91,14 +91,9 @@ def get_model():
     conv5 = identity_block(conv5, [512,512,2048], 3, '5', '3')
 
     avg_pool = GlobalAveragePooling2D()(conv5)
-    out = Dense(8, activation='softmax')(avg_pool)
+    out = Dense(n_outputs, activation='softmax')(avg_pool)
     
-
     model = Model(inp, out)
-
-    # loss=tf.keras.losses.CategoricalCrossentropy(
-    #     from_logits=False, reduction="auto", name="categorical_crossentropy"
-    # )
 
     model.compile(optimizer=tf.keras.optimizers.Adam(),
                 loss="categorical_crossentropy",

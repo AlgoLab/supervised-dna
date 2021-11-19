@@ -1,7 +1,7 @@
 __version__ = '0.1.0'
 
 from .monitor_values import MonitorValues
-from .fcgr import GenerateFCGR
+from .generate_fcgr import GenerateFCGR
 from .data_selector import DataSelector
 from .image_loader import (
     ImageLoader,
