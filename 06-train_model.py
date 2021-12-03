@@ -17,6 +17,7 @@ CLADES = PARAMETERS["CLADES"]
 BATCH_SIZE = PARAMETERS["BATCH_SIZE"]
 EPOCHS     = PARAMETERS["EPOCHS"]
 MODEL      = PARAMETERS["MODEL"]
+
 # -1- Model selection
 loader = ModelLoader()
 model  = loader(
@@ -30,14 +31,6 @@ with open("datasets.json","r") as f:
     datasets = json.load(f)
 list_train = datasets["train"]
 list_val   = datasets["val"]
-
-# - Preprocessing -
-#  # Load min_array.jpg
-# BASE_DIR = Path(__file__).resolve().parent.parent
-# PATH_REF_ARRAY = BASE_DIR.joinpath("ref_array.npy")
-# REF_ARRAY = np.load(str(PATH_REF_ARRAY))
-# REF_ARRAY = np.expand_dims(REF_ARRAY,axis=-1)
-# MAX_VALUE = REF_ARRAY.max()
 
 def preprocessing(self, npy, ref_array, max_value):
     "The input npy is loaded as a (2**K,2**K,1) dimensional array"
@@ -70,21 +63,52 @@ ds_val = DataGenerator(
 
 # -3- Training
 # Callbacks
-checkpoint_path = "checkpoint/cp.ckpt"
 
-model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-    filepath=checkpoint_path, 
-    save_weights_only=True,
-    monitor='loss',
+# checkpoint: save best weights
+Path("data/train/checkpoints").mkdir(exist_ok=True, parents=True)
+cb_checkpoint = tf.keras.callbacks.ModelCheckpoint(
+    filepath='data/train/checkpoints/model-{epoch:02d}-{val_accuracy:.3f}.hdf5',
+    monitor='val_loss',
     mode='min',
-    save_best_only=True)
+    save_best_only=True,
+    verbose=1
+)
+
+# reduce learning rate
+cb_reducelr = tf.keras.callbacks.ReduceLROnPlateau(
+    monitor='val_loss',
+    mode='min',
+    factor=0.1,
+    patience=8,
+    verbose=1,
+    min_lr=0.00001
+)
+
+# stop training if
+cb_earlystop = tf.keras.callbacks.EarlyStopping(
+    monitor='val_loss',
+    mode='min',
+    min_delta=0.001,
+    patience=10,
+    verbose=1
+)
+
+# save history of training
+Path("data/train").mkdir(exist_ok=True, parents=True)
+cb_csvlogger = tf.keras.callbacks.CSVLogger(
+    filename='data/train/training_log.csv',
+    separator=',',
+    append=False
+)
 
 model.fit(
     ds_train,
     validation_data=ds_val,
     epochs=EPOCHS,
     callbacks=[
-        model_checkpoint_callback,
-        tf.keras.callbacks.EarlyStopping(patience=5),
+        cb_checkpoint,
+        cb_reducelr,
+        cb_earlystop,
+        cb_csvlogger,
         ]
 )
