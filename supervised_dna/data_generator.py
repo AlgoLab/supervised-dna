@@ -1,12 +1,11 @@
 "Load data to the model (Same as dataset.py but with keras)"
 
-from typing import List, Union
+from typing import List, Union, Callable, Optional
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
-
-from .encoder_output import EncoderOutput
-from .image_loader import InputOutputLoader
+from PIL import Image
+from .npy_loader import InputOutputLoader
 
 class DataGenerator(tf.keras.utils.Sequence):
     """Data Generator  for keras from a list of paths to files""" 
@@ -16,13 +15,16 @@ class DataGenerator(tf.keras.utils.Sequence):
                 order_output_model: List[str],
                 batch_size: int = 8,
                 shuffle: bool = True,
-                kmer: int = 8,
+                kmer: int = 8,          
+                preprocessing: Optional[Callable] = None 
                 ):
         self.list_paths = list_paths
         self.order_output_model = order_output_model   
         self.batch_size = batch_size 
         self.shuffle = shuffle
-        self.input_output_loader = InputOutputLoader(2**kmer, 2**kmer, order_output_model)
+        self.kmer = kmer
+        self.preprocessing = preprocessing if callable(preprocessing) else lambda x: x
+        self.input_output_loader = InputOutputLoader(order_output_model)
         
         # initialize first batch
         self.on_epoch_end()
@@ -65,13 +67,9 @@ class DataGenerator(tf.keras.utils.Sequence):
         X_batch = []
         y_batch = []
         for path in list_path_temp: 
-            img, label = self.input_output_loader(path)
-            img = self.preprocessing(img)
-            X_batch.append(np.expand_dims(img,axis=0)) # add to list with batch dims
+            npy, label = self.input_output_loader(path)
+            npy = self.preprocessing(npy)
+            X_batch.append(np.expand_dims(npy,axis=0)) # add to list with batch dims
             y_batch.append(label)
 
         return np.concatenate(X_batch, axis=0), np.array(y_batch)
-
-    @staticmethod
-    def preprocessing(img):
-        return img/255.

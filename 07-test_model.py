@@ -3,30 +3,37 @@ import pandas as pd
 from parameters import PARAMETERS
 from supervised_dna import (
     ModelLoader,
-    DatasetLoader,
+    DataGenerator,
 )
 
 KMER = PARAMETERS["KMER"]
-BATCH_SIZE = 8
+BATCH_SIZE = PARAMETERS["BATCH_SIZE"]
+CLADES = PARAMETERS["CLADES"]
+BITS = PARAMETERS["BITS"]
+MODEL = PARAMETERS["MODEL"]
 
 # -1- Load model
 loader = ModelLoader()
-model  = loader("cnn_{}mers".format(KMER), weights_path="checkpoint/cp.ckpt") # get compiled model from ./supervised_dna/models
+model  = loader(MODEL, weights_path="checkpoint/cp.ckpt") # get compiled model from ./supervised_dna/models
 
 # -2- Datasets
 # load list of images for train and validation sets
 with open("datasets.json","r") as f:
     datasets = json.load(f)
-list_test = datasets["val"][:64]
+list_test = datasets["test"]
 
+config_generator = dict(
+    order_output_model = CLADES,
+    batch_size = BATCH_SIZE,
+    shuffle = False,
+    kmer = KMER,
+    bits = BITS,
+)
 
-ds_loader = DatasetLoader(batch_size=BATCH_SIZE, 
-                            kmer=KMER, 
-                            order_output_model=["1","2","3","4"],
-                            shuffle=False,
-                            )
-
-ds_test = ds_loader(list_img = list_test)
+ds_test = DataGenerator(
+    list_test,
+    **config_generator
+) 
 
 # Evaluate model and save metrics
 result = model.evaluate(ds_test)

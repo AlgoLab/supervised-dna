@@ -1,86 +1,65 @@
-"""
-This script assumes that each Fasta file contains only one sequence
-"""
-from tqdm import tqdm
-import random ; random.seed(42)
-from pathlib import Path
-from Bio import SeqIO
-from complexcgr import FCGR
+from .cgr import CGR
+from itertools import product
+from collections import defaultdict
+import numpy as np 
 
-from .monitor_values import (
-    MonitorValues, 
-)
+class FCGR(CGR): 
+    """Frequency matrix CGR
+    an (2**k x 2**k) 2D representation will be created for a 
+    n-long sequence. 
+    - k represents the k-mer.
+    - 2**k x 2**k = 4**k the total number of k-mers (sequences of length k)
+    - pixel value correspond to the value of the frequency for each k-mer
+    """
 
-#TODO: tqdm for FCGR generation
-class GenerateFCGR: 
+    def __init__(self, k: int,):
+        super().__init__()
+        self.k = k # k-mer representation
+        self.kmers = product("ACGT", repeat=self.k)
 
-    def __init__(self, destination_folder: Path = "img", kmer: int = 8): 
-        self.destination_folder = Path(destination_folder)
-        self.kmer = kmer
-        self.fcgr = FCGR(kmer)
-        self.counter = 0 # count number of time a sequence is converted to fcgr
+    def __call__(self, sequence: str):
+        "Given a DNA sequence, returns an array with his frequencies in the same order as FCGR"
+        self.count_kmers(sequence)
         
-        # Monitor Values
-        self.mv = MonitorValues(["id_seq","path","path_save","len_seq",
-                                "count_A","count_C","count_G","count_T"])
+        # Create an empty array to save the FCGR values
+        array_size = int(2**self.k)
+        freq_matrix = np.zeros((array_size,array_size))
 
-        # Create destination folder if needed
-        self.destination_folder.mkdir(parents=True, exist_ok=True)
+        # Assign frequency to each box in the matrix
+        for kmer, freq in self.freq_kmer.items():
+            pos_x, pos_y = self.pixel_position(kmer)          
+            freq_matrix[int(pos_x)-1,int(pos_y)-1] = freq
+        return freq_matrix
+    
+    def count_kmer(self, kmer):
+        if "N" not in kmer:
+            self.freq_kmer[kmer] += 1
 
-    def __call__(self, list_fasta):
+    def count_kmers(self, sequence: str): 
+        self.freq_kmer = defaultdict(int)
+        # representativity of kmers
+        last_j = len(sequence) - self.k + 1   
+        kmers  = (sequence[i:(i+self.k)] for i in range(last_j))
+        # count kmers in a dictionary
+        list(self.count_kmer(kmer) for kmer in kmers)
         
-        for path in tqdm(list_fasta, desc="Generating FCGR"):
-            self.from_fasta(path)
+    def kmer_probabilities(self, sequence: str):
+        self.probabilities = defaultdict(float)
+        N=len(sequence)
+        for key, value in self.freq_kmer.items():
+            self.probabilities[key] = float(value) / (N - self.k + 1)
 
-        # save metadata
-        self.mv.to_csv(self.destination_folder.joinpath("fcgr-metadata.csv"))
+    def pixel_position(self, kmer: str):
+        "Get pixel position in the FCGR matrix for a k-mer"
 
-    def from_fasta(self, path: Path,):
-        """FCGR for a sequence in a fasta file.
-        The FCGR image will be save in 'destination_folder/specie/label/id_fasta.jpg'
-        """
-        # load fasta file
-        path = Path(path)
-        fasta  = self.load_fasta(path)
-        record = next(fasta)
-
-        # get basic information
-        seq     = record.seq
-        id_seq  = record.id.replace("/","_")
-        len_seq = len(seq)
-        count_A = seq.count("A")
-        count_C = seq.count("C")
-        count_G = seq.count("G")
-        count_T = seq.count("T")
+        coords = self.encode(kmer)
+        N,x,y = coords.N, coords.x, coords.y
         
-        # Generate and save FCGR for the current sequence
-        _, specie, _, label  = str(path.parents[0]).split("/")
-        id_fasta = path.stem
-        path_save = self.destination_folder.joinpath("{}/{}/{}.jpg".format(specie, label, id_fasta))
-        path_save.parents[0].mkdir(parents=True, exist_ok=True)
-        self.from_seq(record.seq, path_save)
-        
-        # Collect values to monitor 
-        self.mv()
-        
-    def from_seq(self, seq: str, path_save):
-        "Get FCGR from a sequence"
-        if not Path(path_save).is_file():
-            seq = self.preprocessing(seq)
-            chaos = self.fcgr(seq)
-            self.fcgr.save(chaos, path_save)
-        self.counter +=1
+        # Coordinates from [-1,1]² to [1,2**k]²
+        np_coords = np.array([(x + 1)/2, (y + 1)/2]) # move coordinates from [-1,1]² to [0,1]²
+        np_coords *= 2**self.k # rescale coordinates from [0,1]² to [0,2**k]²
+        x,y = np.ceil(np_coords) # round to upper integer 
 
-    def reset_counter(self,):
-        self.counter=0
-        
-    @staticmethod
-    def preprocessing(seq):
-        seq = seq.upper()
-        for letter in "BDEFHIJKLMOPQRSUVWXYZ":
-            seq = seq.replace(letter,"N")
-        return seq
-
-    @staticmethod
-    def load_fasta(path: Path):
-        return SeqIO.parse(path, "fasta")
+        # Turn coordinates (cx,cy) into pixel (px,py) position 
+        # px = 2**k-cy+1, py = cx
+        return 2**self.k-int(y)+1, int(x)

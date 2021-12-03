@@ -5,8 +5,8 @@ from pathlib import Path
 from supervised_dna import DataSelector
 
 # Select all data
-FOLDER_IMG = Path(PARAMETERS["FOLDER_IMG"]) 
-LIST_FASTA   = list(FOLDER_IMG.rglob("*jpg"))
+FOLDER_NPY = Path(PARAMETERS["FOLDER_NPY"]) 
+LIST_FASTA   = list(FOLDER_NPY.rglob("*npy"))
 TRAIN_SIZE   = float(PARAMETERS["TRAIN_SIZE"]) 
 
 # Input for DataSelector
@@ -18,7 +18,6 @@ ds = DataSelector(id_labels, labels)
 
 # Get train, test and val sets
 ds(train_size=TRAIN_SIZE, balanced_on=labels)
-
 
 with open("datasets.json", "w", encoding="utf-8") as f: 
     json.dump(ds.datasets["id_labels"], f, ensure_ascii=False, indent=4)
