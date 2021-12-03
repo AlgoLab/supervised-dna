@@ -22,6 +22,7 @@ MODEL = "resnet50_8mers"
 # Load to a Dictionary
 PARAMETERS = dict(
     KMER = KMER,
+    SPECIE = SPECIE,
     CLADES = CLADES,
     SAMPLES_PER_CLADE = SAMPLES_PER_CLADE,
     PATH_FASTA_GISAID = PATH_FASTA_GISAID,
