@@ -43,5 +43,5 @@ for clade in tqdm(CLADES):
     # select 'SAMPLES_PER_CLADE' samples for each clade, or all of them if available samples are less than required
     list_fasta_selected.extend([SampleClade(fasta_id, clade) for fasta_id in samples_clade[:SAMPLES_PER_CLADE]])
 
-Path("data/train").mkdir(exists_ok=True, parents=True)
+Path("data/train").mkdir(exist_ok=True, parents=True)
 pd.DataFrame(list_fasta_selected).to_csv("data/train/undersample_by_clade.csv")
