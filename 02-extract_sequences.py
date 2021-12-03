@@ -19,7 +19,7 @@ for clade in PARAMETERS["CLADES"]:
     FOLDER_FASTA.joinpath(clade).mkdir(parents=True, exist_ok=True)
 
 # load fasta_id to save
-undersample = pd.read_csv("undersample_by_clade.csv").to_dict("records")
+undersample = pd.read_csv("data/train/undersample_by_clade.csv").to_dict("records")
 set_fasta_id = set([record.get("fasta_id") for record in undersample])
 clades_by_fastaid = {record.get("fasta_id"): record.get("clade") for record in undersample} 
 
