@@ -12,3 +12,4 @@ saliency-maps/
 *.tar.gz
 aux.py
 /checkpoints
+/datasets.json
