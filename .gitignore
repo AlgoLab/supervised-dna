@@ -6,4 +6,8 @@ supervised-dna/
 supervised-dna/__pycache__/
 data/
 __pycache__/
+checkpoints/
+kmer-importance/
+saliency-maps/
+*.tar.gz
 aux.py
