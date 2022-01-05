@@ -56,7 +56,7 @@ def get_kmer_importance(grad_eval, threshold, array_freq, pos2kmer):
         )
 
     # Sort values by importance (value of the gradient) 
-    sorted(list_saliency, key=lambda x: x.grad,reverse=True)
+    list_saliency = sorted(list_saliency, key=lambda x: x.grad,reverse=True)
 
     return list_saliency
 

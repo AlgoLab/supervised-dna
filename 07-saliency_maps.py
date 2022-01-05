@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from Bio import SeqIO
+from tqdm import tqdm
 
 from supervised_dna.saliency_maps import (
     get_saliencymap,
@@ -41,7 +42,7 @@ model  = loader(
 # load list of npy for testing and then refer to the fasta file
 with open("datasets.json","r") as fp: 
     datasets = json.load(fp)
-list_test = list(Path("data").rglob("*.fasta")) #datasets["test"] # list of npy files 'npy-8-mer/hCoV-19/{CLADE}/{seq_name}.npy'
+list_test = datasets["test"]
 
 def modify_path(path): 
     """Modify paths 'npy-8-mer/hCoV-19/{CLADE}/{seq_name}.npy' 
@@ -50,38 +51,52 @@ def modify_path(path):
     path = path.replace(".npy",".fasta")
     return path
 
-#list_test = [modify_path(path) for path in list_test]
+list_test = [modify_path(path) for path in list_test]
+available_data = [str(path) for path in Path("data").rglob("*.fasta")] #datasets["test"] # list of npy files 'npy-8-mer/hCoV-19/{CLADE}/{seq_name}.npy'
+list_test = [path for path  in set(list_test).intersection(set(available_data))]
 
 # Analysis
 fcgr = FCGR(k=KMER)
 pos2kmer = fcgrpos2kmers(k=KMER) # dict with position in FCGR to kmer
+THRESHOLD_SALIENCYMAP = 0.1
 
-path_fasta = list_test[0]
+# --- for one sample ---
+# path_fasta = list_test[0]
 
-# --- for one sample ----
-fasta = next(SeqIO.parse(path_fasta, "fasta"))
-array_freq = fcgr(sequence=fasta.seq)
-# preproceesing (divide by 10) and add channel axis
-input_model = np.expand_dims(array_freq/10. , axis=-1)
-input_model = np.expand_dims(input_model,axis=0)
+def preprocess_seq(seq):
+    "Remove all characters different from A,C,G,T or N"
+    seq = seq.upper()
+    for letter in "BDEFHIJKLMOPQRSUVWXYZ":
+        seq = seq.replace(letter,"N")
+    return seq
 
-grad_eval = get_saliencymap(model, input_model)
+def compute_analysis(path_fasta):
+    fasta = next(SeqIO.parse(path_fasta, "fasta"))
+    array_freq = fcgr(sequence=preprocess_seq(str(fasta.seq)))
+    # preproceesing (divide by 10) and add channel axis
+    input_model = np.expand_dims(array_freq/10. , axis=-1)
+    input_model = np.expand_dims(input_model,axis=0)
 
-kmer_importance = get_kmer_importance(grad_eval, 0.1, array_freq, pos2kmer)
+    grad_eval = get_saliencymap(model, input_model)
 
-# obtain positions where each kmer match in the original sequence
-df = pd.DataFrame(kmer_importance)
-df["matches"] = df.apply(lambda row: find_matches(row["kmer"],str(fasta.seq)) if row["freq"]>0 else None,axis=1)
+    kmer_importance = get_kmer_importance(grad_eval, THRESHOLD_SALIENCYMAP, array_freq, pos2kmer)
 
-# Save results: saliency_map
-path_grad_eval = str(path_fasta).replace("data","saliency-maps")
-path_grad_eval = path_grad_eval.replace(".fasta",".npy")
-Path(path_grad_eval).parent.mkdir(parents=True, exist_ok=True)
-np.save(path_grad_eval, grad_eval)
+    # obtain positions where each kmer match in the original sequence
+    df = pd.DataFrame(kmer_importance)
+    df["matches"] = df.apply(lambda row: find_matches(row["kmer"],str(fasta.seq)) if row["freq"]>0 else None,axis=1)
 
-# Save results: kmer importance
-path_kmer_importance = path_grad_eval = str(path_fasta).replace("data","kmer-importance")
-path_kmer_importance = path_grad_eval.replace(".fasta",".csv")
-Path(path_kmer_importance).parent.mkdir(parents=True, exist_ok=True)
-df.to_csv(path_kmer_importance)
-# --- for one sample ----
+    # Save results: saliency_map
+    path_grad_eval = str(path_fasta).replace("data","saliency-maps")
+    path_grad_eval = path_grad_eval.replace(".fasta",".npy")
+    Path(path_grad_eval).parent.mkdir(parents=True, exist_ok=True)
+    np.save(path_grad_eval, grad_eval)
+
+    # Save results: kmer importance
+    path_kmer_importance = path_grad_eval = str(path_fasta).replace("data","kmer-importance")
+    path_kmer_importance = path_grad_eval.replace(".fasta",".csv")
+    Path(path_kmer_importance).parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(path_kmer_importance)
+    # --- for one sample ----
+
+for path_fasta in tqdm(list_test, desc="Computing Saliency Maps"):
+    compute_analysis(path_fasta)

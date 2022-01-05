@@ -38,7 +38,7 @@ def preprocessing(self, npy, ref_array, max_value):
     npy = np.subtract(npy,ref_array)
 
     # Scale around/approx [0,1]
-    npy /= max_value
+    npy /= 10.
     return npy
 
 # prepare datasets to feed the model
