@@ -11,3 +11,4 @@ kmer-importance/
 saliency-maps/
 *.tar.gz
 aux.py
+/checkpoints
