@@ -21,7 +21,8 @@ from supervised_dna.fcgr import FCGR
 from supervised_dna.utils import (
     array2img,
     find_matches,
-    fcgrpos2kmers
+    fcgrpos2kmers,
+    preprocess_seq
 )
 
 from parameters import PARAMETERS
@@ -62,13 +63,6 @@ THRESHOLD_SALIENCYMAP = 0.1
 
 # --- for one sample ---
 # path_fasta = list_test[0]
-
-def preprocess_seq(seq):
-    "Remove all characters different from A,C,G,T or N"
-    seq = seq.upper()
-    for letter in "BDEFHIJKLMOPQRSUVWXYZ":
-        seq = seq.replace(letter,"N")
-    return seq
 
 def compute_analysis(path_fasta):
     fasta = next(SeqIO.parse(path_fasta, "fasta"))
