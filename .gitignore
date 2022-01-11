@@ -1,3 +1,4 @@
+.ipynb_checkpoints/
 checkpoint/
 img-8-mer/
 npy-8-mer/
@@ -9,6 +10,7 @@ __pycache__/
 checkpoints/
 kmer-importance/
 saliency-maps/
+freq-kmer/
 *.tar.gz
 aux.py
 /checkpoints

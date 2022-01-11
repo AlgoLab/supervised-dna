@@ -90,6 +90,13 @@ def compute_analysis(path_fasta):
     path_kmer_importance = path_grad_eval.replace(".fasta",".csv")
     Path(path_kmer_importance).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(path_kmer_importance)
+    
+    # Save results: frequency per kmer as fcgr
+    path_fcgr = str(path_fasta).replace("data","freq-kmer")
+    path_fcgr = path_fcgr.replace(".fasta",".npy")
+    Path(path_fcgr).parent.mkdir(parents=True, exist_ok=True)
+    np.save(path_fcgr, array_freq)
+
     # --- for one sample ----
 
 for path_fasta in tqdm(list_test, desc="Computing Saliency Maps"):

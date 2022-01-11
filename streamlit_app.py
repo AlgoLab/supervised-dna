@@ -1,3 +1,4 @@
+from math import isnan
 import streamlit as st
 import time
 
@@ -25,6 +26,7 @@ from supervised_dna.utils import (
 )
 
 def plot(array_freq, grad_eval):
+    "FCGR vs Saliency Maps"
     fig, axes = plt.subplots(1,2,figsize=(14,5))
     axes[0].imshow(array2img(array_freq), cmap="gray")
     i = axes[1].imshow(grad_eval,cmap="jet",alpha=0.8)
@@ -42,7 +44,6 @@ KMER = PARAMETERS["KMER"]
 MODEL  = "resnet50_8mers"
 CLADES = ['S','L','G','V','GR','GH','GV','GK']
 WEIGHTS_PATH = "checkpoints/model-02-0.969.hdf5"
-THRESHOLD_SALIENCYMAP = 0.1
 
 # Load Model
 @st.cache(allow_output_mutation=True)
@@ -57,8 +58,6 @@ def load_model():
 
 # FCGR(position) to kmer
 pos2kmer = fcgrpos2kmers(k=KMER)
-
-CLADE ="S"
 
 # Load data available
 @st.cache(persist=True)
@@ -76,6 +75,11 @@ try:
                     max_value=1.,
                     value=0.1,
                     step=0.1) 
+
+    # clade 
+    CLADE = st.selectbox(
+        "Choose clade", CLADES, index=0
+    )
     # sequence (fasta) to analyze
     filename  = st.selectbox(
         "Choose fasta", read_path_fasta(),
@@ -117,20 +121,39 @@ try:
     # 
     ByMatch = namedtuple("ByMatch",["match","grad","kmer"])
     list_by_match=[]
+
+    NoMatch = namedtuple("NoMatch",["grad","kmer"])
+    list_no_match=[]
+
     for row in df.itertuples():
         if row.matches:
             matches = row.matches.split(",")
             kmer = row.kmer
             grad = row.grad
             for match in matches: 
-                list_by_match.append(ByMatch(match,grad,kmer))            
+                list_by_match.append(ByMatch(match,grad,kmer))       
+        else: 
+            kmer = row.kmer
+            grad = row.grad
+            list_no_match.append(NoMatch(grad,kmer))
     df_by_match = pd.DataFrame(list_by_match)
     df_by_match["match"] = df_by_match["match"].astype(int)
-    df_by_match.sort_values(by="match",inplace=True,ignore_index=True)
+    df_by_match.sort_values(by="grad",inplace=True,ignore_index=True,ascending=True)
+    #df_by_match.sort_values(by="match",inplace=True,ignore_index=True)
+    df_by_match.to_csv("df_prueba.csv")
     st.write("by match", df_by_match)
-    bar_kmers = plot_kmer(df_by_match)
-    st.pyplot(fig = bar_kmers)
+    barplot_kmers = plot_kmer(df_by_match)
+    st.pyplot(fig = barplot_kmers)
     
+    # No Match
+    df_no_match = pd.DataFrame(list_no_match)
+    df_no_match.sort_values(by="grad",inplace=True,ignore_index=True,ascending=True)
+    st.write("no match", df_no_match)
+
+    barplot_kmers_nomatch = plot_kmer(df_no_match)
+    st.pyplot(fig = barplot_kmers_nomatch)
+
+
 except URLError as e:
     st.error(
         """
