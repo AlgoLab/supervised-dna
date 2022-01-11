@@ -140,7 +140,6 @@ try:
     df_by_match["match"] = df_by_match["match"].astype(int)
     df_by_match.sort_values(by="grad",inplace=True,ignore_index=True,ascending=True)
     #df_by_match.sort_values(by="match",inplace=True,ignore_index=True)
-    df_by_match.to_csv("df_prueba.csv")
     st.write("by match", df_by_match)
     barplot_kmers = plot_kmer(df_by_match)
     st.pyplot(fig = barplot_kmers)
