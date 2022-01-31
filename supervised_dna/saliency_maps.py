@@ -2,7 +2,7 @@ from collections import namedtuple
 import numpy as np
 import tensorflow as tf
 
-def get_saliencymap(model, input_model): 
+def get_saliencymap(model, input_model, order_output): 
     """Compute gradients for each pixel w/r to the predicted class
 
     Args:
@@ -18,7 +18,9 @@ def get_saliencymap(model, input_model):
         pred = model(input_, training=False)
         class_idxs_sorted = np.argsort(pred.numpy().flatten())[::-1]
         loss = pred[0][class_idxs_sorted[0]]
-        
+    prob = loss
+    pred_class = order_output[class_idxs_sorted[0]]
+
     grads = tape.gradient(loss, input_)
     dgrad_abs = tf.math.abs(grads)
     dgrad_max_ = np.max(dgrad_abs, axis=3)[0] # i think this is not necessary for grayscale images
@@ -27,7 +29,7 @@ def get_saliencymap(model, input_model):
     arr_min, arr_max  = np.min(dgrad_max_), np.max(dgrad_max_)
     grad_eval = (dgrad_max_ - arr_min) / (arr_max - arr_min + 1e-18)
 
-    return grad_eval
+    return grad_eval, prob, pred_class
 
 def get_kmer_importance(grad_eval, threshold, array_freq, pos2kmer):
     """find most relevant kmers for the prediction

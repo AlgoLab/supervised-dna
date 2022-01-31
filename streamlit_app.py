@@ -31,6 +31,9 @@ def plot(array_freq, grad_eval):
     axes[0].imshow(array2img(array_freq), cmap="gray")
     i = axes[1].imshow(grad_eval,cmap="jet",alpha=0.8)
     fig.colorbar(i)
+    fig.suptitle(f"FCGR and Saliency Maps")
+    axes[0].set_title("FCGR")
+    axes[1].set_title("Saliency Map")
     return fig
 
 def plot_kmer(df):
@@ -98,7 +101,7 @@ try:
     input_model = np.expand_dims(input_model,axis=0)
 
     # Saliency Map
-    grad_eval = get_saliencymap(model, input_model)
+    grad_eval, prob, pred_class = get_saliencymap(model, input_model, order_output=CLADES)
     
     # k-mer importance  
     kmer_importance = get_kmer_importance(grad_eval, 
@@ -112,7 +115,7 @@ try:
     get_matches = lambda row, fasta: find_matches(row["kmer"],str(fasta.seq),return_str=True)
     df["matches"] = df.apply(lambda row: get_matches(row,fasta) if row["freq"]>0 else None,axis=1)
 
-    
+    st.write(f"Clade predicted: {pred_class}| Probability: {prob}")
     fig = plot(array_freq,grad_eval)
     st.pyplot(fig)
 

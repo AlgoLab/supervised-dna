@@ -13,12 +13,34 @@ from parameters import PARAMETERS
 k = PARAMETERS["KMER"]
 CLADES = PARAMETERS["CLADES"]
 
+# results on prediction
+path_model_preds = "results_nextclade_comparison.csv"
+model_preds = pd.read_csv(path_model_preds)
+
+# get ground truth for the sequence
+model_preds["ground_truth"] = model_preds["path_fasta"].apply(lambda path: path.split("/")[2])
+model_preds["TP"] = model_preds.apply(lambda row: row["ground_truth"]==row["pred_class"], axis=1)
+
 for clade in tqdm(CLADES):
-    path_save = Path(f"avg-results/{clade}")
+    path_save = Path(f"avg-results-nextclade-comparison/{clade}")
     path_save.mkdir(parents=True, exist_ok=True)
 
-    list_saliencymaps = list(Path(f"saliency-maps/hCoV-19/{clade}").rglob("*.npy"))
-    list_freqkmer = list(Path(f"freq-kmer/hCoV-19/{clade}").rglob("*.npy"))
+    # filter only True Positive samples 
+    paths_TP_clade = model_preds.query(f"`ground_truth` == '{clade}' and `TP`==True")["path_fasta"].tolist()
+
+    # saliency maps
+    list_saliencymaps = [
+        path.replace("data","saliency-maps").replace(".fasta",".npy")
+                                                    for path in paths_TP_clade
+                                                    ]
+
+    # kmer importance
+    list_freqkmer = [
+        path.replace("data","freq-kmer").replace(".fasta",".npy")
+                                                    for path in paths_TP_clade
+                                                    ]
+    # list_saliencymaps = list(Path(f"saliency-maps-nextclade-comparison/hCoV-19/{clade}").rglob("*.npy"))
+    # list_freqkmer = list(Path(f"freq-kmer-nextclade-comparison/hCoV-19/{clade}").rglob("*.npy"))
 
     # average saliency maps
     sm_clade = np.zeros((2**k,2**k)) # saliency map

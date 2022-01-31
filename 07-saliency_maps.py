@@ -41,9 +41,9 @@ model  = loader(
 
 # -2- Load sequences
 # load list of npy for testing and then refer to the fasta file
-with open("datasets.json","r") as fp: 
-    datasets = json.load(fp)
-list_test = datasets["test"]
+# with open("datasets.json","r") as fp: 
+#     datasets = json.load(fp)
+# list_test = datasets["test"]
 
 def modify_path(path): 
     """Modify paths 'npy-8-mer/hCoV-19/{CLADE}/{seq_name}.npy' 
@@ -52,9 +52,10 @@ def modify_path(path):
     path = path.replace(".npy",".fasta")
     return path
 
-list_test = [modify_path(path) for path in list_test]
-available_data = [str(path) for path in Path("data").rglob("*.fasta")] #datasets["test"] # list of npy files 'npy-8-mer/hCoV-19/{CLADE}/{seq_name}.npy'
-list_test = [path for path  in set(list_test).intersection(set(available_data))]
+# list_test = [modify_path(path) for path in list_test]
+# available_data = [str(path) for path in Path("data").rglob("*.fasta")] #datasets["test"] # list of npy files 'npy-8-mer/hCoV-19/{CLADE}/{seq_name}.npy'
+# list_test = [path for path  in set(list_test).intersection(set(available_data))]
+list_test = list(Path("data-nextclade-comparison").rglob("*.fasta"))
 
 # Analysis
 fcgr = FCGR(k=KMER)
@@ -71,7 +72,7 @@ def compute_analysis(path_fasta):
     input_model = np.expand_dims(array_freq/10. , axis=-1)
     input_model = np.expand_dims(input_model,axis=0)
 
-    grad_eval = get_saliencymap(model, input_model)
+    grad_eval, prob, pred_class = get_saliencymap(model, input_model, CLADES)
 
     kmer_importance = get_kmer_importance(grad_eval, THRESHOLD_SALIENCYMAP, array_freq, pos2kmer)
 
@@ -97,7 +98,14 @@ def compute_analysis(path_fasta):
     Path(path_fcgr).parent.mkdir(parents=True, exist_ok=True)
     np.save(path_fcgr, array_freq)
 
+    return prob.numpy(), pred_class
     # --- for one sample ----
 
+from collections import namedtuple
+Results = namedtuple("Results",["path_fasta","prob","pred_class"])
+list_results = []
 for path_fasta in tqdm(list_test, desc="Computing Saliency Maps"):
-    compute_analysis(path_fasta)
+    prob, pred_class = compute_analysis(path_fasta)
+    list_results.append(Results(path_fasta, prob, pred_class))
+
+pd.DataFrame(list_results).to_csv("results_nextclade_comparison.csv")

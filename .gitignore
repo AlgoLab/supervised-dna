@@ -16,3 +16,12 @@ avg-results/
 aux.py
 /checkpoints
 /datasets.json
+avg-results-nextclade-comparison/
+data-nextclade-comparison/
+data-outer-comparison/
+freq-kmer-nextclade-comparison/
+kmer-importance-nextclade-comparison/
+master-lineages/
+nextclade-comparison/
+outer-comparison/
+saliency-maps-nextclade-comparison/
