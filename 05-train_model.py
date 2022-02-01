@@ -9,7 +9,6 @@ from supervised_dna import (
 )
 from parameters import PARAMETERS
 
-
 tf.config.threading.set_intra_op_parallelism_threads(2)
 tf.config.threading.set_inter_op_parallelism_threads(2)
 
@@ -22,12 +21,15 @@ BATCH_SIZE = PARAMETERS["BATCH_SIZE"]
 EPOCHS     = PARAMETERS["EPOCHS"]
 MODEL      = PARAMETERS["MODEL"]
 
+WEIGHTS_PATH = "checkpoints/model-02-0.969.hdf5"
+
 with tf.device('/CPU:0'):
     # -1- Model selection
     loader = ModelLoader()
     model  = loader(
                 model_name=MODEL,
-                n_outputs=len(CLADES)
+                n_outputs=len(CLADES),
+                weights_path=WEIGHTS_PATH
                 ) # get compiled model from ./supervised_dna/models
 
     # -2- Datasets
