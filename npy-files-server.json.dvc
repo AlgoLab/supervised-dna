@@ -1,0 +1,4 @@
+outs:
+- md5: 34ff9c7b60e36740e39cc5e85dc6c2d7
+  size: 3668472
+  path: npy-files-server.json

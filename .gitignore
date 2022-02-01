@@ -25,3 +25,5 @@ master-lineages/
 nextclade-comparison/
 outer-comparison/
 saliency-maps-nextclade-comparison/
+/summary_labels.csv
+/npy-files-server.json
