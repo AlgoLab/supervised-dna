@@ -1,15 +1,17 @@
 import json
+import numpy as np
 import pandas as pd
 from parameters import PARAMETERS
 from pathlib import Path
 from supervised_dna import DataSelector
 
 # Select all data
-# FOLDER_NPY = Path(PARAMETERS["FOLDER_NPY"]) 
-# LIST_FASTA   = list(FOLDER_NPY.rglob("*npy"))
-with open("npy-files-server.json") as fp: 
-    files=json.load(fp)
-    LIST_FASTA=[Path(filename) for filename in files]
+FOLDER_NPY = Path(PARAMETERS["FOLDER_NPY"]) 
+LIST_FASTA   = list(FOLDER_NPY.rglob("*npy"))
+
+# with open("npy-files-server.json") as fp: 
+#     files=json.load(fp)
+#     LIST_FASTA=[Path(filename) for filename in files]
     
 TRAIN_SIZE   = float(PARAMETERS["TRAIN_SIZE"]) 
 
