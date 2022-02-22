@@ -8,7 +8,7 @@ SPECIE = "hCoV-19"
 
 # Undersample sequences
 PATH_METADATA = "/data/GISAID/metadata.tsv"
-CLADES = ['S','L','G','V','GR','GH','GV','GK','GRY']
+CLADES = ['S','L','G','V','GR','GH','GV','GK']#,'GRY']
 SAMPLES_PER_CLADE = 5000
 PATH_FASTA_GISAID = "/data/GISAID/sequences.fasta"
 

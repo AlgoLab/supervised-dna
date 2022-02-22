@@ -1,7 +1,26 @@
+import os
 import json
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
+
+# This works for limit the number of threads
+# https://github.com/tensorflow/tensorflow/issues/29968
+num_threads = 1
+# Maximum number of threads to use for OpenMP parallel regions.
+os.environ["OMP_NUM_THREADS"] = "1"
+# Without setting below 2 environment variables, it didn't work for me. Thanks to @cjw85 
+os.environ["TF_NUM_INTRAOP_THREADS"] = "1"
+os.environ["TF_NUM_INTEROP_THREADS"] = "1"
+
+tf.config.threading.set_inter_op_parallelism_threads(
+    num_threads
+)
+tf.config.threading.set_intra_op_parallelism_threads(
+    num_threads
+)
+tf.config.set_soft_device_placement(True)
+
 
 from supervised_dna import (
     ModelLoader,
@@ -9,8 +28,8 @@ from supervised_dna import (
 )
 from parameters import PARAMETERS
 
-tf.config.threading.set_intra_op_parallelism_threads(2)
-tf.config.threading.set_inter_op_parallelism_threads(2)
+SEED = PARAMETERS("SEED")
+tf.random.set_seed(SEED)
 
 # General parameters
 KMER = PARAMETERS["KMER"]
@@ -21,7 +40,7 @@ BATCH_SIZE = PARAMETERS["BATCH_SIZE"]
 EPOCHS     = PARAMETERS["EPOCHS"]
 MODEL      = PARAMETERS["MODEL"]
 
-WEIGHTS_PATH = "checkpoints/model-02-0.969.hdf5"
+#WEIGHTS_PATH = "checkpoints/model-02-0.969.hdf5"
 
 with tf.device('/CPU:0'):
     # -1- Model selection
@@ -29,7 +48,7 @@ with tf.device('/CPU:0'):
     model  = loader(
                 model_name=MODEL,
                 n_outputs=len(CLADES),
-                weights_path=WEIGHTS_PATH
+                #weights_path=WEIGHTS_PATH
                 ) # get compiled model from ./supervised_dna/models
 
     # -2- Datasets
@@ -48,24 +67,25 @@ with tf.device('/CPU:0'):
         npy /= 10.
         return npy
 
-    # prepare datasets to feed the model
-    config_generator = dict(
+    ## prepare datasets to feed the model
+    # Instantiate DataGenerator for training set
+    ds_train = DataGenerator(
+        list_train,
+        order_output_model = CLADES,
+        batch_size = BATCH_SIZE,
+        shuffle = True,
+        kmer = KMER,
+        preprocessing = preprocessing,
+    )
+
+    # Instantiate DataGenerator for validation set
+    ds_val = DataGenerator(
+        list_val,
         order_output_model = CLADES,
         batch_size = BATCH_SIZE,
         shuffle = False,
         kmer = KMER,
         preprocessing = preprocessing,
-    )
-
-    # Instantiate DataGenerator for training set
-    ds_train = DataGenerator(
-        list_train,
-        **config_generator
-    )
-
-    ds_val = DataGenerator(
-        list_val,
-        **config_generator
     ) 
 
     # -3- Training
