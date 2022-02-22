@@ -28,7 +28,7 @@ from supervised_dna import (
 )
 from parameters import PARAMETERS
 
-SEED = PARAMETERS("SEED")
+SEED = PARAMETERS["SEED"]
 tf.random.set_seed(SEED)
 
 # General parameters
@@ -58,11 +58,8 @@ with tf.device('/CPU:0'):
     list_train = datasets["train"]
     list_val   = datasets["val"]
 
-    def preprocessing(self, npy, ref_array, max_value):
+    def preprocessing(npy):
         "The input npy is loaded as a (2**K,2**K,1) dimensional array"
-        # Substract min_array
-        npy = np.subtract(npy,ref_array)
-
         # Scale around/approx [0,1]
         npy /= 10.
         return npy

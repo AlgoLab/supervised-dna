@@ -32,5 +32,6 @@ PARAMETERS = dict(
     TRAIN_SIZE = TRAIN_SIZE,
     BATCH_SIZE = BATCH_SIZE,
     EPOCHS = EPOCHS,   
-    MODEL = MODEL    
+    MODEL = MODEL,
+    SEED = 42,    
 )

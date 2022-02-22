@@ -13,7 +13,7 @@ LIST_FASTA   = list(FOLDER_NPY.rglob("*npy"))
 #     files=json.load(fp)
 #     LIST_FASTA=[Path(filename) for filename in files]
     
-TRAIN_SIZE   = float(PARAMETERS["TRAIN_SIZE"]) 
+TRAIN_SIZE   = float(PARAMETERS["TRAIN_SIZE"])
 
 # Input for DataSelector
 id_labels = [str(path) for path in LIST_FASTA]
